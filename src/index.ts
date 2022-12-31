@@ -1,4 +1,4 @@
-import { Constants } from './constants.js'
+import * as constants from './constants.js'
 import { Commands } from './commands.js'
 import { Command } from './command.js'
 import { readdirSync } from 'fs'
@@ -12,12 +12,12 @@ import {
 } from 'matrix-bot-sdk'
 import dotenv from 'dotenv'
 
-console.log('ei-lover version ' + Constants.VERSION + ' starting...')
+console.log('ei-lover version ' + constants.VERSION + ' starting...')
 // Load environment variables from .env
 dotenv.config()
 
 // Configure the homeserver and storage provider
-const homeserver: string = process.env.HOMESERVER || Constants.HOMESERVER
+const homeserver: string = process.env.HOMESERVER || constants.HOMESERVER
 console.log(`Using homeserver ${homeserver}`)
 const storage: SimpleFsStorageProvider = new SimpleFsStorageProvider(
     './storage/bot.json'
@@ -63,7 +63,7 @@ console.log('Enabling autojoin...')
 AutojoinRoomsMixin.setupOnClient(client)
 
 // Register commands
-const prefix = process.env.PREFIX || Constants.PREFIX
+const prefix = process.env.PREFIX || constants.PREFIX
 const commands = new Commands()
 console.log('Command prefix: ' + prefix)
 console.log('Registering commands from ./commands ...')
