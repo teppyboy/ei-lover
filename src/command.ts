@@ -1,5 +1,6 @@
 import { MatrixClient } from 'matrix-bot-sdk'
 
+// TODO: Find out Event type
 class Command {
     name: string
     description: string
@@ -12,7 +13,12 @@ class Command {
     ) => Promise<void>
     constructor(
         name: string,
-        callback: any,
+        callback: (
+            client: MatrixClient,
+            roomId: string,
+            event: any,
+            args: string[]
+        ) => Promise<void>,
         description: string = 'A command',
         aliases: string[] = []
     ) {
