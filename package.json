@@ -2,7 +2,7 @@
     "name": "ei-lover",
     "version": "1.0.0",
     "description": "Another bot for Matrix",
-    "main": "index.js",
+    "main": "src/index.js",
     "repository": "https://github.com/teppyboy/ei-lover",
     "author": "tretrauit",
     "type": "module",
@@ -22,9 +22,9 @@
         "typescript": "*"
     },
     "scripts": {
-        "start": "tsc && node index.js"
+        "start": "tsc && node src/index.js"
     },
     "lint-staged": {
-      "**/*": "prettier --write --ignore-unknown"
+        "**/*": "prettier --write --ignore-unknown"
     }
 }

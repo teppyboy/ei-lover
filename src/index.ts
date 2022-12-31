@@ -74,7 +74,7 @@ readdirSync('./commands', { withFileTypes: true }).forEach(async (file) => {
         return
     }
     console.log('Registering command ' + file.name)
-    const command: Command = await import('./commands/' + file.name)
+    const command: Command = await import('../commands/' + file.name)
     console.log(command)
     commands.importCommand(command)
 })
