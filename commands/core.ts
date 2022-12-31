@@ -3,19 +3,19 @@ import { VERSION, COMMIT } from '../src/constants.js'
 
 const version: Command = new Command(
     'version',
-    async (client: MatrixClient, roomId: string, event: any, _: string[]) => {
+    async (client: MatrixClient, roomId: string, event: any) => {
         await client.replyHtmlNotice(
             roomId,
             event,
             `<strong>Version:</strong> ${VERSION} (<a href="https://github.com/teppyboy/ei-lover/commit/${COMMIT}">${COMMIT}</a>)`
         )
     },
-    'Show the bot version and commit hash.',
+    'Show the bot version and commit hash.'
 )
 
 const about: Command = new Command(
     'about',
-    async (client: MatrixClient, roomId: string, event: any, _: string[]) => {
+    async (client: MatrixClient, roomId: string, event: any) => {
         await client.replyHtmlNotice(
             roomId,
             event,
@@ -24,7 +24,7 @@ const about: Command = new Command(
             <strong>Version:</strong> ${VERSION} (<a href="https://github.com/teppyboy/ei-lover/commit/${COMMIT}">${COMMIT}</a>)`
         )
     },
-    'About this bot.',
+    'About this bot.'
 )
 
 export { version, about }
