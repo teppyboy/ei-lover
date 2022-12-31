@@ -1,45 +1,45 @@
-import { Command } from "./command.js";
+import { Command } from './command.js'
 
 class Commands {
-    _commands: Command[] = [];
+    _commands: Command[] = []
     getCommands(): Command[] {
-        return this._commands;
+        return this._commands
     }
     getCommand(name: string): Command | void {
         for (const command of this._commands) {
             if (command.name === name) {
-                return command;
+                return command
             }
             if (command.aliases) {
                 for (const alias of command.aliases) {
                     if (alias === name) {
-                        return command;
+                        return command
                     }
                 }
             }
         }
     }
     addCommand(command: Command): void {
-        this._commands.push(command);
+        this._commands.push(command)
     }
     importCommand(module: any): void {
         Object.values(module).forEach((command: any) => {
-            this.addCommand(command);
+            this.addCommand(command)
         })
     }
     removeCommand(name: string): void {
         this._commands.forEach((command, index) => {
             if (command.name === name) {
-                return this._commands.splice(index, 1);
+                return this._commands.splice(index, 1)
             }
             if (command.aliases) {
-                command.aliases.forEach(alias => {
+                command.aliases.forEach((alias) => {
                     if (alias === name) {
-                        return this._commands.splice(index, 1);
+                        return this._commands.splice(index, 1)
                     }
-                });
+                })
             }
-        });
+        })
     }
 }
-export {Commands}
+export { Commands }
