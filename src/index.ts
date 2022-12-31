@@ -12,6 +12,7 @@ import {
 } from 'matrix-bot-sdk'
 import dotenv from 'dotenv'
 
+console.log('ei-lover version ' + Constants.VERSION + ' starting...')
 // Load environment variables from .env
 dotenv.config()
 
