@@ -11,7 +11,7 @@ const ping: Command = new Command(
         console.log('Args:', args)
         await client.replyNotice(roomId, event, 'Pong!')
     },
-    'Ping the bot!',
+    'Ping the bot.',
     ['pong']
 )
 
