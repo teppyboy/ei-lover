@@ -1,4 +1,5 @@
 import { MatrixClient } from 'matrix-bot-sdk'
+import { Commands } from './commands.js'
 
 // TODO: Find out Event type
 class Command {
@@ -9,7 +10,8 @@ class Command {
         client: MatrixClient,
         roomId: string,
         event: any,
-        args: string[]
+        args: string[],
+        commands: Commands
     ) => Promise<void>
     constructor(
         name: string,
@@ -17,7 +19,8 @@ class Command {
             client: MatrixClient,
             roomId: string,
             event: any,
-            args: string[]
+            args: string[],
+            commands: Commands
         ) => Promise<void>,
         description: string = 'A command',
         aliases: string[] = []
@@ -32,9 +35,10 @@ class Command {
         client: MatrixClient,
         roomId: string,
         event: any,
-        args: string[]
+        args: string[],
+        commands: Commands
     ) {
-        await this.callback(client, roomId, event, args)
+        await this.callback(client, roomId, event, args, commands)
     }
 }
 export { MatrixClient, Command }

@@ -66,7 +66,6 @@ AutojoinRoomsMixin.setupOnClient(client)
 const prefix = process.env.PREFIX || constants.PREFIX
 const commands = new Commands()
 console.log('Command prefix: ' + prefix)
-console.log('Registering commands from ./commands ...')
 readdirSync('./commands', { withFileTypes: true }).forEach(async (file) => {
     if (!file.isFile()) {
         return
@@ -74,12 +73,12 @@ readdirSync('./commands', { withFileTypes: true }).forEach(async (file) => {
     if (path.extname(file.name) !== '.js') {
         return
     }
-    console.log('Registering command ' + file.name)
+    console.log('Importing command(s) from file ' + file.name)
     const command: Command = await import('../commands/' + file.name)
     console.log(command)
     commands.importCommand(command)
 })
-console.log('Registered all commands.')
+console.log('Imported all commands.')
 // TODO: Add proper command handler
 client.on('room.message', async (roomId, event) => {
     if (!event.content?.msgtype) {
@@ -98,7 +97,7 @@ client.on('room.message', async (roomId, event) => {
         return
     }
     const args: string[] = body.split(' ').slice(1)
-    await command.invoke(client, roomId, event, args)
+    await command.invoke(client, roomId, event, args, commands)
 })
 
 client.start().then(async () => {
