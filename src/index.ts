@@ -100,6 +100,10 @@ client.on('room.message', async (roomId, event) => {
     await command.invoke(client, roomId, event, args, commands)
 })
 
-client.start().then(async () => {
-    console.log('Bot started as ' + (await client.getUserId()))
-})
+try {
+    client.start().then(async () => {
+        console.log('Bot started as ' + (await client.getUserId()))
+    })    
+} catch (error) {
+    console.error(error)
+}
