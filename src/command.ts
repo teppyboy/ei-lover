@@ -11,7 +11,8 @@ class Command {
         roomId: string,
         event: any,
         args: string[],
-        commands: Commands
+        commands: Commands,
+        ...rest: any[]
     ) => Promise<void>
     constructor(
         name: string,
@@ -20,7 +21,8 @@ class Command {
             roomId: string,
             event: any,
             args: string[],
-            commands: Commands
+            commands: Commands,
+            ...rest: any[]
         ) => Promise<void>,
         description: string = 'A command',
         aliases: string[] = []
@@ -36,9 +38,10 @@ class Command {
         roomId: string,
         event: any,
         args: string[],
-        commands: Commands
+        commands: Commands,
+        ...rest: any[]
     ) {
-        await this.callback(client, roomId, event, args, commands)
+        await this.callback(client, roomId, event, args, commands, ...rest)
     }
 }
 export { MatrixClient, Command }
