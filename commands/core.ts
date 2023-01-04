@@ -1,11 +1,12 @@
 import { MatrixClient, Command } from '../src/command.js'
 import { Commands } from '../src/commands.js'
-import { VERSION, COMMIT } from '../src/constants.js'
+import { VERSION, COMMIT, GIT_DIRTY } from '../src/constants.js'
 
 const version: Command = new Command(
     'version',
     async (client: MatrixClient, roomId: string, event: any) => {
-        const commitStr = ((COMMIT === "unknown") ? "unknown": `(<a href="https://github.com/teppyboy/ei-lover/commit/${COMMIT}">${COMMIT}</a>)`)
+        const dirtyStr = ((GIT_DIRTY) ? " (dirty)": "")
+        const commitStr = ((COMMIT === "unknown") ? "unknown": `(<a href="https://github.com/teppyboy/ei-lover/commit/${COMMIT}">${COMMIT}</a>${dirtyStr})`)
         await client.replyHtmlNotice(
             roomId,
             event,
@@ -18,7 +19,8 @@ const version: Command = new Command(
 const about: Command = new Command(
     'about',
     async (client: MatrixClient, roomId: string, event: any) => {
-        const commitStr = ((COMMIT === "unknown") ? "unknown": `(<a href="https://github.com/teppyboy/ei-lover/commit/${COMMIT}">${COMMIT}</a>)`)
+        const dirtyStr = ((GIT_DIRTY) ? " (dirty)": "")
+        const commitStr = ((COMMIT === "unknown") ? "unknown": `(<a href="https://github.com/teppyboy/ei-lover/commit/${COMMIT}">${COMMIT}</a>${dirtyStr})`)
         await client.replyHtmlNotice(
             roomId,
             event,
