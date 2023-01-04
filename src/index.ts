@@ -12,7 +12,13 @@ import {
 } from 'matrix-bot-sdk'
 import dotenv from 'dotenv'
 
-console.log('ei-lover version ' + constants.VERSION + ' (' + constants.COMMIT + ') starting...')
+console.log(
+    'ei-lover version ' +
+        constants.VERSION +
+        ' (' +
+        constants.COMMIT +
+        ') starting...'
+)
 // Load environment variables from .env
 dotenv.config()
 
@@ -117,7 +123,7 @@ client.on('room.message', async (roomId, event) => {
 try {
     client.start().then(async () => {
         console.log('Bot started as ' + (await client.getUserId()))
-    })    
+    })
 } catch (error) {
     console.error(error)
 }
