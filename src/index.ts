@@ -94,10 +94,24 @@ client.on('room.message', async (roomId, event) => {
     const commandName: string = body.split(' ')[0].slice(prefix.length)
     const command = commands.getCommand(commandName)
     if (!command) {
+        await client.replyNotice(
+            roomId,
+            event,
+            `Unknown command: ${commandName}`
+        )
         return
     }
     const args: string[] = body.split(' ').slice(1)
-    await command.invoke(client, roomId, event, args, commands)
+    try {
+        await command.invoke(client, roomId, event, args, commands)
+    } catch (error) {
+        console.error(`Error while running ${command.name}: ${error}`)
+        await client.replyNotice(
+            roomId,
+            event,
+            `Error while running <code>${command.name}</code>: ${error}`
+        )
+    }
 })
 
 try {
