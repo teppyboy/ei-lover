@@ -12,7 +12,7 @@ import {
 } from 'matrix-bot-sdk'
 import dotenv from 'dotenv'
 
-console.log('ei-lover version ' + constants.VERSION + ' starting...')
+console.log('ei-lover version ' + constants.VERSION + ' (' + constants.COMMIT + ') starting...')
 // Load environment variables from .env
 dotenv.config()
 
@@ -92,7 +92,7 @@ client.on('room.message', async (roomId, event) => {
         return
     }
     const commandName: string = body.split(' ')[0].slice(prefix.length)
-    const command = commands.getCommand(commandName)
+    const command: Command | void = commands.getCommand(commandName)
     if (!command) {
         await client.replyNotice(
             roomId,
