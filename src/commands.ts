@@ -1,7 +1,7 @@
 import { Command } from './command.js'
 
 class Commands {
-    _commands: Command[] = []
+    readonly _commands: Command[] = []
     getCommands(): Command[] {
         return this._commands
     }
