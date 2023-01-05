@@ -1,7 +1,7 @@
 import * as constants from './constants.js'
 import { Commands } from './commands.js'
 import { Command } from './command.js'
-import { readdirSync } from 'fs'
+import { readdirSync, mkdirSync, existsSync } from 'fs'
 import path from 'path'
 import {
     MatrixClient,
@@ -68,10 +68,26 @@ if (!process.env.ACCESS_TOKEN) {
 console.log('Enabling autojoin...')
 AutojoinRoomsMixin.setupOnClient(client)
 
-// Register commands
-const prefix = process.env.PREFIX || constants.PREFIX
-const commands = new Commands()
+const prefix: string = process.env.PREFIX || constants.PREFIX
+const commands: Commands = new Commands()
+const features: string[] = (process.env.FEATURES || 'all').split(',')
+async function checkAndEnableFeature(name: string, file: string) {
+    if (features.includes('all') || features.includes(name)) {
+        console.log(`Enabling feature '${name}'`)
+        const command: Command = await import('./commands/' + file)
+        commands.importCommand(command)
+    }
+}
 console.log('Command prefix: ' + prefix)
+console.log('Importing internal commands...')
+// Register internal commands
+checkAndEnableFeature('core', 'core.js')
+checkAndEnableFeature('ping', 'ping.js')
+console.log('Importing external commands...')
+// Register external commands
+if (!existsSync('./commands')) {
+    mkdirSync('./commands')
+}
 readdirSync('./commands', { withFileTypes: true }).forEach(async (file) => {
     if (!file.isFile()) {
         return
@@ -81,7 +97,7 @@ readdirSync('./commands', { withFileTypes: true }).forEach(async (file) => {
     }
     console.log('Importing command(s) from file ' + file.name)
     const command: Command = await import('../commands/' + file.name)
-    console.log(command)
+    // console.log(command)
     commands.importCommand(command)
 })
 console.log('Imported all commands.')
@@ -125,5 +141,5 @@ try {
         console.log('Bot started as ' + (await client.getUserId()))
     })
 } catch (error) {
-    console.error(error)
+    console.warn(error)
 }

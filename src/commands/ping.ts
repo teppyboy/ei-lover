@@ -1,4 +1,4 @@
-import { MatrixClient, Command } from '../src/command.js'
+import { MatrixClient, Command } from '../command.js'
 
 const ping: Command = new Command(
     'ping',

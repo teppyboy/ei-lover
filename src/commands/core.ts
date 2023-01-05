@@ -1,6 +1,6 @@
-import { MatrixClient, Command } from '../src/command.js'
-import { Commands } from '../src/commands.js'
-import { VERSION, COMMIT, GIT_DIRTY } from '../src/constants.js'
+import { MatrixClient, Command } from '../command.js'
+import { Commands } from '../commands.js'
+import { VERSION, COMMIT, GIT_DIRTY } from '../constants.js'
 
 const version: Command = new Command(
     'version',
