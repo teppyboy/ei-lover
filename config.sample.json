@@ -1,0 +1,14 @@
+{
+    "homeserver": "https://matrix-client.matrix.org",
+    "bot": {
+        "owners": ["@user:example.org"],
+        "prefixes": ["!"],
+        "features": ["core"]
+    },
+    "logging": {
+        "level": "info"
+    },
+    "commands": {
+        "compatibility": ["ts", "js"]
+    }
+}

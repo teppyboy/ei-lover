@@ -1,90 +1,110 @@
-import * as constants from './constants.js'
+import * as globals from './globals.js'
 import { Commands } from './commands.js'
 import { Command } from './command.js'
-import { readdirSync, mkdirSync, existsSync } from 'fs'
-import path from 'path'
+import * as ts from 'ts-node'
+import config from './config.js'
+import { readdirSync, mkdirSync, existsSync } from 'node:fs'
+import path from 'node:path'
 import {
     MatrixClient,
     MatrixAuth,
     SimpleFsStorageProvider,
     RustSdkCryptoStorageProvider,
     AutojoinRoomsMixin,
+    AutojoinUpgradedRoomsMixin,
+    MessageEvent,
+    MessageEventContent,
 } from 'matrix-bot-sdk'
 import dotenv from 'dotenv'
 
-console.log(
-    'ei-lover version ' +
-        constants.VERSION +
-        ' (' +
-        constants.COMMIT +
-        ') starting...'
-)
+const logger = globals.defaultLogger
+
+logger.level = config.logging.level || 'info'
+logger.info(`ei-lover (${globals.commit}) starting up...`)
+logger.info('Log level: ' + logger.level)
+logger.trace(logger, "Config loaded")
 // Load environment variables from .env
 dotenv.config()
-
 // Configure the homeserver and storage provider
-const homeserver: string = process.env.HOMESERVER || constants.HOMESERVER
-console.log(`Using homeserver ${homeserver}`)
+const homeserver: string = config.homeserver || globals.defaultHomeserver
+logger.info(`Using homeserver ${homeserver}`)
+if (!existsSync('./storage')) {
+    mkdirSync('./storage')
+}
 const storage: SimpleFsStorageProvider = new SimpleFsStorageProvider(
     './storage/bot.json'
 )
 const crypto = new RustSdkCryptoStorageProvider('./storage/crypto')
 
+let accessToken: string
 // Create the client
-if (!process.env.ACCESS_TOKEN) {
+if (process.env.ACCESS_TOKEN) {
+    accessToken = process.env.ACCESS_TOKEN
+} else {
     if (!process.env.USERNAME || !process.env.PASSWORD) {
-        console.error(
-            'No Matrix access token or username & password specified. Please set the ACCESS_TOKEN or the USERNAME and PASSWORD environment variables.'
+        logger.fatal(
+            'No Matrix access token or username & password specified.' +
+                'Please set the ACCESS_TOKEN or the USERNAME and PASSWORD environment variables.'
         )
         process.exit(1)
     }
-    console.log('Logging in using credentials...')
-    console.warn(
-        'It is recommended to use an access token instead of a username and password, which you can use by setting ACCESS_TOKEN environment variable.'
+    logger.info('Logging in using credentials...')
+    logger.warn(
+        'It is recommended to use an access token instead of a username and password, ' +
+            'which you can use by setting ACCESS_TOKEN environment variable.'
     )
     const auth: MatrixAuth = new MatrixAuth(homeserver)
     const simpleClient: MatrixClient = await auth.passwordLogin(
         process.env.USERNAME,
         process.env.PASSWORD
     )
-    console.log('Access token: ' + simpleClient.accessToken)
-    var client: MatrixClient = new MatrixClient(
-        homeserver,
-        simpleClient.accessToken,
-        storage,
-        crypto
-    )
-} else {
-    console.log('Logging in using access token...')
-    var client: MatrixClient = new MatrixClient(
-        homeserver,
-        process.env.ACCESS_TOKEN,
-        storage,
-        crypto
-    )
+    logger.info('Access token: ' + simpleClient.accessToken)
+    accessToken = simpleClient.accessToken
+    logger.warn('Please save this access token for future use.')
 }
+logger.info('Logging in using access token...')
+var client: MatrixClient = new MatrixClient(
+    homeserver,
+    accessToken,
+    storage,
+    crypto
+)
+client.syncingPresence = 'online'
 
 // Autojoin
-console.log('Enabling autojoin...')
+logger.info('Enabling autojoin mixins...')
 AutojoinRoomsMixin.setupOnClient(client)
+AutojoinUpgradedRoomsMixin.setupOnClient(client)
 
-const prefix: string = process.env.PREFIX || constants.PREFIX
+// Commands
+const prefixes: string[] = config.bot.prefixes || globals.prefixes
 const commands: Commands = new Commands()
-const features: string[] = (process.env.FEATURES || 'all').split(',')
-async function checkAndEnableFeature(name: string, file: string) {
-    if (features.includes('all') || features.includes(name)) {
-        console.log(`Enabling feature '${name}'`)
-        const command: Command = await import('./commands/' + file)
+logger.info('Command prefixes: ' + prefixes)
+
+logger.debug("Registering TS compiler instance...")
+ts.register()
+// Register internal commands
+logger.info('Importing internal commands...')
+const defaultFeatures = {
+    core: 'core.js',
+    ping: 'ping.js',
+    vpn: 'vpn.js',
+}
+const features: string[] = config.bot.features || ['core']
+const enabledFeatures: string[] = []
+for (const [k, v] of Object.entries(defaultFeatures)) {
+    if (features.includes('all') || features.includes(k)) {
+        const command: Command = await import('./commands/' + v)
         commands.importCommand(command)
+        logger.debug(`Commands '${v}' imported`)
+        logger.trace(command)
+        enabledFeatures.push(k)
     }
 }
-console.log('Command prefix: ' + prefix)
-console.log('Importing internal commands...')
-// Register internal commands
-checkAndEnableFeature('core', 'core.js')
-checkAndEnableFeature('ping', 'ping.js')
-console.log('Importing external commands...')
+logger.info('Enabled features: ' + enabledFeatures.join(', '))
+
 // Register external commands
+logger.info('Importing external commands...')
 if (!existsSync('./commands')) {
     mkdirSync('./commands')
 }
@@ -92,54 +112,73 @@ readdirSync('./commands', { withFileTypes: true }).forEach(async (file) => {
     if (!file.isFile()) {
         return
     }
-    if (path.extname(file.name) !== '.js') {
+    if (path.extname(file.name) !== '.js' && path.extname(file.name) !== '.js') {
         return
     }
-    console.log('Importing command(s) from file ' + file.name)
-    const command: Command = await import('../commands/' + file.name)
-    // console.log(command)
-    commands.importCommand(command)
+    if (config.commands.compatibility.includes(path.extname(file.name).slice(1))) {
+        const command: Command = await import('../commands/' + file.name)
+        // console.log(command)
+        commands.importCommand(command)
+        logger.debug('File imported: ' + file.name)
+    }
 })
-console.log('Imported all commands.')
+logger.info(
+    'Imported commands (internal & external): ' +
+        commands.getCommandNames().join(', ')
+)
+
 // TODO: Add proper command handler
-client.on('room.message', async (roomId, event) => {
-    if (!event.content?.msgtype) {
-        return
+logger.info('Registering command handler...')
+client.on(
+    'room.message',
+    async (roomId, event: MessageEvent<MessageEventContent>) => {
+        if (!event.content?.msgtype) {
+            return
+        }
+        if (event.sender === (await client.getUserId())) {
+            return
+        }
+        logger.debug('Message sender: ' + event.sender)
+        const body: string = event.content.body
+        for (const prefix of prefixes) {
+            if (body.startsWith(prefix)) {
+                const commandName: string = body
+                    .split(' ')[0]
+                    .slice(prefix.length)
+                const command: Command | void = commands.getCommand(commandName)
+                if (!command) {
+                    await client.replyNotice(
+                        roomId,
+                        event,
+                        `Unknown command: ${commandName}`
+                    )
+                    logger.debug(
+                        'User executed unknown command: ' + commandName
+                    )
+                    return
+                }
+                const args: string[] = body.split(' ').slice(1)
+                try {
+                    await command.invoke(client, roomId, event, args, commands)
+                } catch (error) {
+                    logger.warn(`Error while running ${command.name}: ${error}`)
+                    await client.replyNotice(
+                        roomId,
+                        event,
+                        `Error while running <code>${command.name}</code>: ${error}`
+                    )
+                }
+                break
+            }
+            return
+        }
     }
-    if (event.sender === (await client.getUserId())) {
-        return
-    }
-    const body: string = event.content.body
-    if (!body.startsWith(prefix)) {
-        return
-    }
-    const commandName: string = body.split(' ')[0].slice(prefix.length)
-    const command: Command | void = commands.getCommand(commandName)
-    if (!command) {
-        await client.replyNotice(
-            roomId,
-            event,
-            `Unknown command: ${commandName}`
-        )
-        return
-    }
-    const args: string[] = body.split(' ').slice(1)
-    try {
-        await command.invoke(client, roomId, event, args, commands)
-    } catch (error) {
-        console.error(`Error while running ${command.name}: ${error}`)
-        await client.replyNotice(
-            roomId,
-            event,
-            `Error while running <code>${command.name}</code>: ${error}`
-        )
-    }
-})
+)
 
 try {
     client.start().then(async () => {
-        console.log('Bot started as ' + (await client.getUserId()))
+        logger.info('Bot started as ' + (await client.getUserId()))
     })
 } catch (error) {
-    console.warn(error)
+    logger.fatal('Closing bot due to error: ' + error)
 }

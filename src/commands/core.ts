@@ -1,19 +1,18 @@
 import { MatrixClient, Command } from '../command.js'
 import { Commands } from '../commands.js'
-import { VERSION, COMMIT, GIT_DIRTY } from '../constants.js'
+import { botVersion, commit } from '../globals.js'
 
 const version: Command = new Command(
     'version',
     async (client: MatrixClient, roomId: string, event: any) => {
-        const dirtyStr = GIT_DIRTY ? ' (dirty)' : ''
         const commitStr =
-            COMMIT === 'unknown'
+            commit === 'unknown'
                 ? 'unknown'
-                : `(<a href="https://github.com/teppyboy/ei-lover/commit/${COMMIT}">${COMMIT}</a>${dirtyStr})`
+                : `<a href="https://github.com/teppyboy/ei-lover/commit/${commit}">${commit}</a>`
         await client.replyHtmlNotice(
             roomId,
             event,
-            `<strong>Version:</strong> ${VERSION} ${commitStr}`
+            `<strong>v${botVersion}</strong> (${commitStr})`
         )
     },
     'Show the bot version and commit hash.'
@@ -22,17 +21,16 @@ const version: Command = new Command(
 const about: Command = new Command(
     'about',
     async (client: MatrixClient, roomId: string, event: any) => {
-        const dirtyStr = GIT_DIRTY ? ' (dirty)' : ''
         const commitStr =
-            COMMIT === 'unknown'
+            commit === 'unknown'
                 ? 'unknown'
-                : `(<a href="https://github.com/teppyboy/ei-lover/commit/${COMMIT}">${COMMIT}</a>${dirtyStr})`
+                : `<a href="https://github.com/teppyboy/ei-lover/commit/${commit}">${commit}</a>`
         await client.replyHtmlNotice(
             roomId,
             event,
             `<h1>ei-lover</h1>
             <p>ei-lover is a Matrix bot written in TypeScript.</p>
-            <strong>Version:</strong> ${VERSION} ${commitStr}`
+            <strong>v${botVersion}</strong> (${commitStr})`
         )
     },
     'About this bot.',

@@ -1,7 +1,11 @@
 # Bot
 .env
+config.json
 storage/
 *.js
+
+# ts-node
+tsconfig.tsbuildinfo
 
 # TypeScript
 node_modules/

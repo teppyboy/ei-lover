@@ -1,7 +1,6 @@
-import { MatrixClient } from 'matrix-bot-sdk'
+import { MatrixClient, MessageEvent, MessageEventContent } from 'matrix-bot-sdk'
 import { Commands } from './commands.js'
 
-// TODO: Find out Event type
 class Command {
     name: string
     description: string
@@ -9,7 +8,7 @@ class Command {
     callback: (
         client: MatrixClient,
         roomId: string,
-        event: any,
+        event: MessageEvent<MessageEventContent>,
         args: string[],
         commands: Commands,
         ...rest: any[]
@@ -19,7 +18,7 @@ class Command {
         callback: (
             client: MatrixClient,
             roomId: string,
-            event: any,
+            event: MessageEvent<MessageEventContent>,
             args: string[],
             commands: Commands,
             ...rest: any[]
@@ -36,7 +35,7 @@ class Command {
     async invoke(
         client: MatrixClient,
         roomId: string,
-        event: any,
+        event: MessageEvent<MessageEventContent>,
         args: string[],
         commands: Commands,
         ...rest: any[]

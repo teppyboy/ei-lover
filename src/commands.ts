@@ -5,6 +5,13 @@ class Commands {
     getCommands(): Command[] {
         return this._commands
     }
+    getCommandNames(): string[] {
+        const names: string[] = []
+        for (const command of this._commands) {
+            names.push(command.name)
+        }
+        return names
+    }
     getCommand(name: string): Command | void {
         for (const command of this._commands) {
             if (command.name === name) {
