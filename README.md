@@ -20,6 +20,8 @@ PASSWORD=<password>
 Assuming you're using pnpm, then to install dependencies
 
 ```bash
+# You may need to run below command if you have trouble installing dependencies
+# pnpm config set @teppyboy:registry http://npm.pkg.github.com
 pnpm install
 ```
 

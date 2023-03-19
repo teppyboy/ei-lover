@@ -12,7 +12,7 @@ class Commands {
         }
         return names
     }
-    getCommand(name: string): Command | void {
+    getCommand(name: string): Command | undefined {
         for (const command of this._commands) {
             if (command.name === name) {
                 return command

@@ -9,6 +9,11 @@
         "level": "info"
     },
     "commands": {
-        "compatibility": ["ts", "js"]
+        "compatibility": ["ts", "js"],
+        "config": {
+            "vpn": {
+                "address": ""
+            }
+        }
     }
 }

@@ -6,7 +6,5 @@ overrides: []
 parserOptions:
     ecmaVersion: latest
     sourceType: module
-ignorePatterns: [
-    "*.js"
-]
+ignorePatterns: ['*.js']
 rules: {}

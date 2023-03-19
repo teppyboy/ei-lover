@@ -7,16 +7,16 @@
         "esm": true,
         "swc": true,
         "compilerOptions": {
-          // compilerOptions specified here will override those declared below,
-          // but *only* in ts-node.  Useful if you want ts-node and tsc to use
-          // different options with a single tsconfig.json.
+            // compilerOptions specified here will override those declared below,
+            // but *only* in ts-node.  Useful if you want ts-node and tsc to use
+            // different options with a single tsconfig.json.
         }
     },
     "compilerOptions": {
         /* Visit https://aka.ms/tsconfig to read more about this file */
 
         /* Projects */
-        "incremental": true,                              /* Save .tsbuildinfo files to allow for incremental compilation of projects. */
+        "incremental": true /* Save .tsbuildinfo files to allow for incremental compilation of projects. */,
         // "composite": true,                                /* Enable constraints that allow a TypeScript project to be used with project references. */
         // "tsBuildInfoFile": "./.tsbuildinfo",              /* Specify the path to .tsbuildinfo incremental compilation file. */
         // "disableSourceOfProjectReferenceRedirect": true,  /* Disable preferring source files instead of declaration files when referencing composite projects. */
@@ -64,7 +64,7 @@
         // "outFile": "./",                                  /* Specify a file that bundles all outputs into one JavaScript file. If 'declaration' is true, also designates a file that bundles all .d.ts output. */
         // "outDir": "./",                                   /* Specify an output folder for all emitted files. */
         // "removeComments": true,                           /* Disable emitting comments. */
-        "noEmit": true,                                   /* Disable emitting files from a compilation. */
+        "noEmit": true /* Disable emitting files from a compilation. */,
         // "importHelpers": true,                            /* Allow importing helper functions from tslib once per project, instead of including them per-file. */
         // "importsNotUsedAsValues": "remove",               /* Specify emit/checking behavior for imports that are only used for types. */
         // "downlevelIteration": true,                       /* Emit more compliant, but verbose and less performant JavaScript for iteration. */

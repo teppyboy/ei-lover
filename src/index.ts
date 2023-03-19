@@ -22,9 +22,10 @@ const logger = globals.defaultLogger
 logger.level = config.logging.level || 'info'
 logger.info(`ei-lover (${globals.commit}) starting up...`)
 logger.info('Log level: ' + logger.level)
-logger.trace(logger, "Config loaded")
+logger.trace(logger, 'Config loaded')
 // Load environment variables from .env
 dotenv.config()
+logger.trace('Loaded env from dotenv')
 // Configure the homeserver and storage provider
 const homeserver: string = config.homeserver || globals.defaultHomeserver
 logger.info(`Using homeserver ${homeserver}`)
@@ -81,7 +82,7 @@ const prefixes: string[] = config.bot.prefixes || globals.prefixes
 const commands: Commands = new Commands()
 logger.info('Command prefixes: ' + prefixes)
 
-logger.debug("Registering TS compiler instance...")
+logger.debug('Registering TS compiler instance...')
 ts.register()
 // Register internal commands
 logger.info('Importing internal commands...')
@@ -89,6 +90,7 @@ const defaultFeatures = {
     core: 'core.js',
     ping: 'ping.js',
     vpn: 'vpn.js',
+    shell: 'shell.js',
 }
 const features: string[] = config.bot.features || ['core']
 const enabledFeatures: string[] = []
@@ -112,10 +114,15 @@ readdirSync('./commands', { withFileTypes: true }).forEach(async (file) => {
     if (!file.isFile()) {
         return
     }
-    if (path.extname(file.name) !== '.js' && path.extname(file.name) !== '.js') {
+    if (
+        path.extname(file.name) !== '.js' &&
+        path.extname(file.name) !== '.js'
+    ) {
         return
     }
-    if (config.commands.compatibility.includes(path.extname(file.name).slice(1))) {
+    if (
+        config.commands.compatibility.includes(path.extname(file.name).slice(1))
+    ) {
         const command: Command = await import('../commands/' + file.name)
         // console.log(command)
         commands.importCommand(command)
@@ -138,7 +145,6 @@ client.on(
         if (event.sender === (await client.getUserId())) {
             return
         }
-        logger.debug('Message sender: ' + event.sender)
         const body: string = event.content.body
         for (const prefix of prefixes) {
             if (body.startsWith(prefix)) {
@@ -158,14 +164,17 @@ client.on(
                     return
                 }
                 const args: string[] = body.split(' ').slice(1)
+                logger.debug(
+                    `User executed '${command.name}' with args '${args}'`
+                )
                 try {
                     await command.invoke(client, roomId, event, args, commands)
                 } catch (error) {
                     logger.warn(`Error while running ${command.name}: ${error}`)
-                    await client.replyNotice(
+                    await client.replyHtmlNotice(
                         roomId,
                         event,
-                        `Error while running <code>${command.name}</code>: ${error}`
+                        `Error while running <code>${command.name}</code>: <pre><code>${error}</code></pre>`
                     )
                 }
                 break
