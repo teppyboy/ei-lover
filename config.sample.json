@@ -12,7 +12,11 @@
         "compatibility": ["ts", "js"],
         "config": {
             "vpn": {
-                "address": ""
+                "address": "",
+                "check": {
+                    "enabled": false,
+                    "interval": 300000
+                }
             }
         }
     }
