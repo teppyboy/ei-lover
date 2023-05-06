@@ -29,7 +29,7 @@
         "typescript": "^4.9.5"
     },
     "scripts": {
-        "start": "ts-node --esm ./src/index.ts"
+        "start": "node --loader ts-node/esm ./src/index.ts"
     },
     "lint-staged": {
         "**/*": "prettier --write --ignore-unknown"
