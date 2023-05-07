@@ -131,6 +131,11 @@ subcommands.addCommand(
                     if (["SUCCESS", "SUCCESS_WITHOUT_ADDRESS"].includes(result.code)) {
                         return
                     }
+                    if (result.code == "VPN_NOT_RUNNING") {
+                        clearInterval(checkInterval)
+                        checkInterval = undefined
+                        return
+                    }
                     await client.sendHtmlNotice(roomId, result.message)
                 }, vpnConfig.check.interval)
             }
