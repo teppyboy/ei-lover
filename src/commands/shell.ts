@@ -110,4 +110,4 @@ const suexec: Command = new Command(
     []
 )
 
-export { exec, shexec }
+export { exec, shexec, suexec }
