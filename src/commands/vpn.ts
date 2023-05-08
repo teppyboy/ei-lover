@@ -7,7 +7,6 @@ import { MatrixClient, Command } from '../command.js'
 import { mkdirSync, existsSync } from 'fs'
 import config from '../config.js'
 import { spawnSudo, sleep } from '../helpers.js'
-import { test } from 'node:test'
 
 const dataPath = paths.data + '/commands/vpn/'
 const repoPath: string = dataPath + '/everything-v2ray/'
@@ -219,11 +218,18 @@ async function testVPN() {
             message: `Success: VPN server <code>${ipAddress}</code> is visble to the internet`
         }
     }
-    const addrIps = await resolve4(prettyAddr)
-    if (!addrIps.includes(ipAddress)) {
+    try {
+        const addrIps = await resolve4(prettyAddr)
+        if (!addrIps.includes(ipAddress)) {
+            return {
+                code: "PARTIALLY_SUCCESS",
+                message: `Partially success: VPN server <code>${ipAddress}</code> is visble but its address <code>${prettyAddr}</code> IPs (${addrIps}) doesn't match`
+            }
+        }
+    } catch (error) {
         return {
             code: "PARTIALLY_SUCCESS",
-            message: `Partially success: VPN server <code>${ipAddress}</code> is visble but its address <code>${prettyAddr}</code> IPs (${addrIps}) doesn't match`
+            message: `Partially success: VPN server <code>${ipAddress}</code> is visble but its address <code>${prettyAddr}</code> cannot be resolved`
         }
     }
     return {
