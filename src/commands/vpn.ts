@@ -6,17 +6,24 @@ import { paths } from '../globals.js'
 import { MatrixClient, Command } from '../command.js'
 import { mkdirSync, existsSync } from 'fs'
 import config from '../config.js'
+import * as globals from '../globals.js'
 import { spawnSudo, sleep } from '../helpers.js'
 
+const logger = globals.defaultLogger
 const dataPath = paths.data + '/commands/vpn/'
 const repoPath: string = dataPath + '/everything-v2ray/'
 
+logger.info('VPN command initializing...')
+logger.debug('Checking for data path...')
 if (!existsSync(dataPath)) {
+    logger.debug('Data path not found, creating...')
     mkdirSync(dataPath, { recursive: true })
 }
 if (existsSync(repoPath)) {
+    logger.debug('Repo path found, pulling...')
     spawnSync('git', ['pull'], { cwd: repoPath })
 } else {
+    logger.debug('Repo path not found, cloning...')
     spawnSync('git', [
         'clone',
         'https://github.com/teppyboy/everything-v2ray',
@@ -26,6 +33,63 @@ if (existsSync(repoPath)) {
 const vpnConfig = config.commands.config.vpn
 let VPNProcess: ChildProcess | undefined
 let checkInterval: NodeJS.Timeout | undefined
+
+async function testVPN() {
+    if (VPNProcess === undefined || VPNProcess.exitCode !== null) {
+        return {
+            code: "VPN_NOT_RUNNING",
+            message: "VPN server is not running"
+        }
+    }
+    const ipAddress = await getIpAddress()
+    if (!ipAddress) {
+        return {
+            code: "GET_IPV4_FAILED",
+            message: "Failed to get current IPv4 address"
+        }
+    }
+    // Hardcode, will fix later...
+    const result = await checkPort(80)
+    if (!result) {
+        return {
+            code: "CHECK_PORT_FAILED",
+            message: `Failed to check VPN server visible status for <code>${ipAddress}</code>`
+        }
+    }
+    if (!result.isOpen) {
+        return {
+            code: "NOT_VISIBLE",
+            message: `Failed: VPN server <code>${ipAddress}</code> is NOT visble to the internet: ` +
+            result.reason
+        }
+    }
+    const prettyAddr = vpnConfig.address
+    if (!prettyAddr) {
+        return {
+            code: "SUCCESS_WITHOUT_ADDRESS",
+            message: `Success: VPN server <code>${ipAddress}</code> is visble to the internet`
+        }
+    }
+    try {
+        const addrIps = await resolve4(prettyAddr)
+        if (!addrIps.includes(ipAddress)) {
+            return {
+                code: "PARTIALLY_SUCCESS",
+                message: `Partially success: VPN server <code>${ipAddress}</code> is visble but its address <code>${prettyAddr}</code> IPs (${addrIps}) doesn't match`
+            }
+        }
+    } catch (error) {
+        return {
+            code: "PARTIALLY_SUCCESS",
+            message: `Partially success: VPN server <code>${ipAddress}</code> is visble but its address <code>${prettyAddr}</code> cannot be resolved`
+        }
+    }
+    return {
+        code: "SUCCESS",
+        message: `Success: VPN server <code>${prettyAddr}</code> (<code>${ipAddress}</code>) is visble to the internet`
+    }
+}
+
 const subcommands: Commands = new Commands()
 const vpn: Command = new Command(
     'vpn',
@@ -81,7 +145,7 @@ subcommands.addCommand(
         async (
             client: MatrixClient,
             roomId: string,
-            event: any,
+            event,
             args: any,
             commands: Commands
         ) => {
@@ -154,7 +218,7 @@ subcommands.addCommand(
 subcommands.addCommand(
     new Command(
         'stop',
-        async (client: MatrixClient, roomId: string, event: any) => {
+        async (client: MatrixClient, roomId: string, event) => {
             if (VPNProcess === undefined || VPNProcess.exitCode !== null) {
                 await client.replyNotice(
                     roomId,
@@ -182,66 +246,10 @@ subcommands.addCommand(
     )
 )
 
-async function testVPN() {
-    if (VPNProcess === undefined || VPNProcess.exitCode !== null) {
-        return {
-            code: "VPN_NOT_RUNNING",
-            message: "VPN server is not running"
-        }
-    }
-    const ipAddress = await getIpAddress()
-    if (!ipAddress) {
-        return {
-            code: "GET_IPV4_FAILED",
-            message: "Failed to get current IPv4 address"
-        }
-    }
-    // Hardcode, will fix later...
-    const result = await checkPort(80)
-    if (!result) {
-        return {
-            code: "CHECK_PORT_FAILED",
-            message: `Failed to check VPN server visible status for <code>${ipAddress}</code>`
-        }
-    }
-    if (!result.isOpen) {
-        return {
-            code: "NOT_VISIBLE",
-            message: `Failed: VPN server <code>${ipAddress}</code> is NOT visble to the internet: ` +
-            result.reason
-        }
-    }
-    const prettyAddr = vpnConfig.address
-    if (!prettyAddr) {
-        return {
-            code: "SUCCESS_WITHOUT_ADDRESS",
-            message: `Success: VPN server <code>${ipAddress}</code> is visble to the internet`
-        }
-    }
-    try {
-        const addrIps = await resolve4(prettyAddr)
-        if (!addrIps.includes(ipAddress)) {
-            return {
-                code: "PARTIALLY_SUCCESS",
-                message: `Partially success: VPN server <code>${ipAddress}</code> is visble but its address <code>${prettyAddr}</code> IPs (${addrIps}) doesn't match`
-            }
-        }
-    } catch (error) {
-        return {
-            code: "PARTIALLY_SUCCESS",
-            message: `Partially success: VPN server <code>${ipAddress}</code> is visble but its address <code>${prettyAddr}</code> cannot be resolved`
-        }
-    }
-    return {
-        code: "SUCCESS",
-        message: `Success: VPN server <code>${prettyAddr}</code> (<code>${ipAddress}</code>) is visble to the internet`
-    }
-}
-
 subcommands.addCommand(
     new Command(
         'test',
-        async (client: MatrixClient, roomId: string, event: any) => {
+        async (client: MatrixClient, roomId: string, event) => {
             if (event == null) {
                 await client.sendHtmlNotice(
                     roomId,
