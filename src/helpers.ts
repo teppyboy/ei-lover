@@ -1,12 +1,18 @@
 import { spawn } from 'child_process'
 import { promisify } from 'util'
 import { userInfo } from 'os'
+import which from 'which'
 
 const sleep = promisify(setTimeout)
 
 function spawnSudoNT(command: string, args: string[], ...rest: any[]) {
-    // You need "gsudo" for this to work.
-    return spawn('sudo', [command, ...args], ...rest)
+    if (which.sync("sudo")) {
+        // You need "gsudo" for this to work.
+        return spawn('sudo', [command, ...args], ...rest)
+    }
+    // Some applications on Windows doesn't even need admin rights
+    // to do things that Linux needs.
+    return spawn(command, args, ...rest)
 }
 
 function spawnSudo(command: string, args: string[], ...rest: any[]) {
