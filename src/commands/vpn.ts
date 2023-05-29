@@ -136,7 +136,7 @@ const vpn: Command = new Command(
         }
     },
     'Personal VPN server management commands',
-    []
+    ['sing-box']
 )
 
 subcommands.addCommand(
@@ -263,12 +263,32 @@ subcommands.addCommand(
                 (await testVPN()).message
             )
         },
-        'Tests the VPN server for open ports'
+        'Tests the VPN server for open ports',
+        ['status']
     )
 )
 
-if (process.env.SUDO_PASSWORD == null) {
-    console.error('SUDO_PASSWORD is not set.')
+subcommands.addCommand(
+    new Command(
+        'pull',
+        async (client: MatrixClient, roomId: string, event) => {
+            await client.replyHtmlNotice(
+                roomId,
+                event,
+                "Pulling updates from the VPN server repository..."
+            )
+            spawnSync('git', ['pull'], { cwd: repoPath })
+            await client.sendHtmlNotice(
+                roomId,
+                "Pulled successfully."
+            )
+        },
+        'Pulls the latest changes from the VPN server repository'
+    )
+)
+
+if (process.platform != 'win32' && process.env.SUDO_PASSWORD == null) {
+    console.error('SUDO_PASSWORD is not set and platform is not Windows.')
     process.exit(1)
 }
 export { vpn }
