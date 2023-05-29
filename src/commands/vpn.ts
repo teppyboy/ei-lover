@@ -177,6 +177,10 @@ subcommands.addCommand(
                     )
                 }
                 VPNProcess = undefined
+                if (checkInterval) {
+                    clearInterval(checkInterval)
+                    checkInterval = undefined
+                }
             })
             await client.replyNotice(
                 roomId,
@@ -230,12 +234,18 @@ subcommands.addCommand(
             if (!VPNProcess.kill() || VPNProcess.exitCode === null) {
                 // SIGTERM failed, try SIGKILL
                 if (!VPNProcess.kill(9) || VPNProcess.exitCode === null) {
-                    await client.replyNotice(
-                        roomId,
-                        event,
-                        'Failed to stop VPN server.'
-                    )
-                    return
+                    // Last resort on Windows
+                    if (process.platform == 'win32') {
+                        // PID doesn't work :(, so we have to kill by name
+                        spawnSudo('taskkill', ['/F', '/IM', 'sing-box.exe'])
+                    } else {
+                        await client.replyNotice(
+                            roomId,
+                            event,
+                            'Failed to stop VPN server.'
+                        )
+                        return
+                    }
                 }
             }
             VPNProcess = undefined
