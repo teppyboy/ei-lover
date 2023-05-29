@@ -227,13 +227,16 @@ subcommands.addCommand(
                 )
                 return
             }
-            if (!VPNProcess.kill()) {
-                await client.replyNotice(
-                    roomId,
-                    event,
-                    'Failed to stop VPN server.'
-                )
-                return
+            if (!VPNProcess.kill() || VPNProcess.exitCode === null) {
+                // SIGTERM failed, try SIGKILL
+                if (!VPNProcess.kill(9) || VPNProcess.exitCode === null) {
+                    await client.replyNotice(
+                        roomId,
+                        event,
+                        'Failed to stop VPN server.'
+                    )
+                    return
+                }
             }
             VPNProcess = undefined
             if (checkInterval) {
