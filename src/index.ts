@@ -183,10 +183,12 @@ client.on(
         }
     }
 )
-
+logger.info("Starting bot...")
 try {
     client.start().then(async () => {
         logger.info('Bot started as ' + (await client.getUserId()))
+    }).catch((error) => {
+        logger.fatal('Error while starting bot: ' + error)
     })
 } catch (error) {
     logger.fatal('Closing bot due to error: ' + error)
