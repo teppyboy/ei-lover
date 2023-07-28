@@ -14,7 +14,7 @@ const dataPath = paths.data + '/commands/vpn/'
 const repoPath: string = dataPath + '/everything-v2ray/'
 
 logger.info('VPN command initializing...')
-logger.debug('Checking for data path...')
+logger.debug(`Checking for data path ${dataPath}`)
 if (!existsSync(dataPath)) {
     logger.debug('Data path not found, creating...')
     mkdirSync(dataPath, { recursive: true })
@@ -158,7 +158,7 @@ subcommands.addCommand(
                 return
             }
             const sudo = spawnSudo('sing-box', ['run'], {
-                cwd: repoPath + '/sing-box/',
+                cwd: repoPath + '/server/sing-box/',
             })
             sudo.on('error', async (err) => {
                 await client.replyNotice(
